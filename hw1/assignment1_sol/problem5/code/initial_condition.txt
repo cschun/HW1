@@ -1,0 +1,4 @@
+-2.020951830285327E+01  2.680006554700714E+01   -9.980490980526813E+00  2.783122074963645E-04   5.151556704056636E-04   -1.017811605200380E-05
+# initial condition obtained from https://ssd.jpl.nasa.gov/horizons.cgi#top
+# data in the format 'x y z vx vy vz'
+# length unit = au, time unit = day
