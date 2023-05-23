@@ -200,16 +200,28 @@ def graph(x, y, z, t):
         for i in range(1):
             line, = ax.plot(x[i], y[i], z[i], label=label[i], c=color[i])
 
-    point_gal, = ax.plot(init_index['x'][1], init_index['y'][1],init_index['z'][1], 'o', color='darkblue')
-    point_int, = ax.plot(init_index['x'][0], init_index['y'][0],init_index['z'][0], 'o', color='darkviolet')
-    point, = ax.plot(init_index['x'][2:], init_index['y'][2:], init_index['z'][2:],'o',color = 'cornflowerblue', markersize=1)
+    point1, = ax.plot(x[:,0], y[:,0], z[:,0], 'o',color = 'cornflowerblue')
+    point_gal1, = ax.plot(x[0], y[0], z[0], 'o', color='darkblue')
+    point_gal2, = ax.plot(x[1], y[1], z[1], 'o', color='darkviolet')
+
+    def update_point(n, x, y, z, point, point_int):
+        x_n = [x[i][n] for i in range(1, len(x))]
+        y_n = [y[i][n] for i in range(1, len(y))]
+        z_n = [z[i][n] for i in range(1, len(z))]
+        point1.set_data(np.array([x_n, y_n]))
+        point1.set_3d_properties(z_n, 'z')
+        point_gal1.set_data(np.array([x[0][n], y[0][n]]))
+        point_gal1.set_3d_properties(z[0][n], 'z')
+        point_gal2.set_data(np.array([x[1][n], y[1][n]]))
+        point_gal2.set_3d_properties(z[1][n], 'z')
+        return point1, point_gal1, point_gal2
 
 
     ax.legend()
     ax.set_xlim([-500, 500])
     ax.set_ylim([-500, 500])
     ax.set_zlim([-500, 500])
-    anim = FuncAnimation(fig, update_point, 1000, fargs=(x, y, z))
+    anim = FuncAnimation(fig, update_point, 1000, fargs=(x, y, z, point1, point_gal1))
     anim.save('final_testing.mp4', fps=60, dpi=200, extra_args=['-vcodec','libx264'])
     plt.savefig('cartwheel_galaxy_simulation.png', dpi=200)
     plt.show()
@@ -239,7 +251,7 @@ if __name__ == "__main__":
     pos_array = np.zeros((len(m1pos)*2, 3, Nt+1))
 
     for i in range(2):
-        mass1 = np.array([[m1], [0], [0]])
+        mass1 = np.array([[m1], [m2], [0]])
         pos1 = np.array([[x1(0), y1(0), 0], [x2(0), y2(0), 0], m1pos[i]])
         vel1 = np.array([[vx1(0), vy1(0), 0], [vx2(0), vy2(0), 0], m1vel[i]])
 
