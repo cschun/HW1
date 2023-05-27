@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-
+import csv
 
 t = 0  # current time of the simulation
-tEnd = 1.5   # time at which simulation ends
+tEnd = 1   # time at which simulation ends
 dt = 0.001  # timestep
 #rmin in kpc
 rmin = 25
@@ -13,7 +13,7 @@ m1 = 10e11
 m2 = 10e11
 #G in terms of solar masses and kpc 
 G = 4.300917270038e-06
-e = 0.6
+e = 0.5
 
 #Functions to get initial values in r,phi
 def r(phi):
@@ -164,27 +164,24 @@ def animation_graph(xx, yy, zz):
 def static_graph(xx, yy, zz):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.scatter3D(xx[1], yy[1], zz[1],  s=5)
-    ax.scatter3D(xx[2], yy[2], zz[2],  s=5)
-    ax.scatter3D(xx[3], yy[3], zz[2],  s=5)
-    ax.scatter3D(xx[0], yy[0], zz[0],  s=5)
+    for i in range(len(xx)):
+        ax.scatter3D(xx[i], yy[i], zz[i],  s=5)
     plt.savefig("2body_orbit.png")
 
 def static_graph2(xx, yy, zz):
     fig = plt.figure()
     ax = plt.axes()
-    ax.scatter(xx[0], yy[0],  s=5)
-    ax.scatter(xx[1], yy[1],  s=5)
-    ax.scatter(xx[2], yy[2],  s=5)
-    ax.scatter(xx[3], yy[3],  s=5)
+    for i in range(len(xx)):
+        ax.scatter(xx[i], yy[i],  s=5)
+
     plt.savefig("2body_orbit2.png")
 
 def rotation_matrix(i):
     a = 1-np.cos(-i)
     c = np.cos(-i)
     s = np.cos(-i)
-    x = np.cos(-90)
-    y = np.sin(-90)
+    x = np.cos(-60)
+    y = np.sin(-60)
     z = 0
     rotation = [[(a*(x**2))+c, a*x*y, s*y],
                 [a*x*y, (a*(y**2))+c, -s*x],
@@ -196,6 +193,7 @@ def graph(x, y, z, t):
     ax = fig.add_subplot(projection='3d')
     label = ['galaxy 1, galaxy 2']
     color = ['magenta','blue']
+
     for i in range(len(t_all)):
         for i in range(1):
             line, = ax.plot(x[i], y[i], z[i], label=label[i], c=color[i])
@@ -204,16 +202,17 @@ def graph(x, y, z, t):
     point_gal1, = ax.plot(x[0], y[0], z[0], 'o', color='darkblue')
     point_gal2, = ax.plot(x[1], y[1], z[1], 'o', color='darkviolet')
 
-    def update_point(n, x, y, z, point, point_int):
-        x_n = [x[i][n] for i in range(1, len(x))]
-        y_n = [y[i][n] for i in range(1, len(y))]
-        z_n = [z[i][n] for i in range(1, len(z))]
+    def update_point(n, x, y, z, point1, point_gal1, point_gal2):
+        x_n = [x[i][n] for i in range(1, 2)]
+        y_n = [y[i][n] for i in range(1, 2)]
+        z_n = [z[i][n] for i in range(1, 2)]
         point1.set_data(np.array([x_n, y_n]))
         point1.set_3d_properties(z_n, 'z')
         point_gal1.set_data(np.array([x[0][n], y[0][n]]))
         point_gal1.set_3d_properties(z[0][n], 'z')
         point_gal2.set_data(np.array([x[1][n], y[1][n]]))
         point_gal2.set_3d_properties(z[1][n], 'z')
+        print("hello")
         return point1, point_gal1, point_gal2
 
 
@@ -221,10 +220,19 @@ def graph(x, y, z, t):
     ax.set_xlim([-500, 500])
     ax.set_ylim([-500, 500])
     ax.set_zlim([-500, 500])
-    anim = FuncAnimation(fig, update_point, 1000, fargs=(x, y, z, point1, point_gal1))
+    anim = FuncAnimation(fig, update_point, 100, fargs=(x, y, z, point1, point_gal1, point_gal2))
     anim.save('final_testing.mp4', fps=60, dpi=200, extra_args=['-vcodec','libx264'])
     plt.savefig('cartwheel_galaxy_simulation.png', dpi=200)
     plt.show()
+
+def save_data(x, y, z, t):
+    with open('final.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["", "tnow", "i", "x", "y", "z"])
+        j = 0
+        for i in range(len(x)):
+            writer.writerows([ j, t[i], i, x[0][i], y[0][i], z[0][i] ])
+            j += 1
 
 
 if __name__ == "__main__":
@@ -234,10 +242,10 @@ if __name__ == "__main__":
     m1pos, m1vel, m1r = initial_conditions(m1)
     m2pos, m2vel, m2r = initial_conditions(m2)
  
-    m1pos = np.array(m1pos)@rotation_matrix(15) 
-    m2pos = np.array(m2pos)@rotation_matrix(60) 
-    m1vel = np.array(m1vel)@rotation_matrix(15) 
-    m2vel = np.array(m2vel)@rotation_matrix(60)
+    m1pos = np.array(m1pos)@rotation_matrix(30) 
+    m2pos = np.array(m2pos)@rotation_matrix(30) 
+    m1vel = np.array(m1vel)@rotation_matrix(30) 
+    m2vel = np.array(m2vel)@rotation_matrix(30)
 
     m1pos = [x - [x1(0), y1(0), 0] for x in m1pos]
     m2pos = [x - [x2(0), y2(0), 0] for x in m2pos]
@@ -277,12 +285,15 @@ if __name__ == "__main__":
         pos_array[0] = pos_save1[0]
         pos_array[1] = pos_save1[1]
         pos_array[i+2] = pos_save1[2]
-        pos_array[(i+2)*2] = pos_save2[2]
+        pos_array[len(m1pos)+2+i] = pos_save2[2]
 
     xx = pos_array[:, 0, :]
     yy = pos_array[:, 1, :]
     zz = pos_array[:, 2, :]
     t_all = np.arange(Nt + 1) * dt
 
-    #animation_graph(xx, yy, zz)
-    graph(xx, yy, zz, t_all)
+    animation_graph(xx, yy, zz)
+    save_data(xx, yy, zz, t_all)
+    #graph(xx, yy, zz, t_all)
+    static_graph2(xx, yy, zz) #2d rep
+    static_graph(xx, yy, zz) #2d rep
